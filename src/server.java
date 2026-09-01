@@ -1,36 +1,40 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 
-import java.net.*;
-import java.util.*;
-public class server {
+public class Server {
     public static void main(String[] args) {
-        System.out.println("Server started");
-        List<Integer> ids = new ArrayList<>();
-        try (ServerSocket mainSocket = new ServerSocket()) {
-            mainSocket.bind(new InetSocketAddress("0.0.0.0", 3141));  
+        int port = 3141;
+
+        try (ServerSocket serverSocket = new ServerSocket(port)) {
+            System.out.println("Server running on port: " + port);
+
             while (true) {
-                Socket clientSocket = mainSocket.accept();
-                System.out.println("Client connected: " + clientSocket.getInetAddress());
-                int clientId = ids.size() + 1;
-                ids.add(clientId);
-                Thread clientThread = new Thread(() -> handleClient(clientSocket, clientId));
-                clientThread.start();
-            }           
-        } 
-        catch (Exception e){
-            System.err.println(e);
+                Socket clientSocket = serverSocket.accept();
+                System.out.println("A new user connected from: " + clientSocket.getRemoteSocketAddress());
+
+                new Thread(() -> handleClientChat(clientSocket)).start();
+            }
+        } catch (IOException e) {
+            System.err.println("Server error: " + e.getMessage());
         }
     }
-    private static void handleClient(Socket clientSocket, int id) {
-        try {
-            
-        } catch (Exception e) {
-            System.err.println("Error handling client: " + e.getMessage());
-        } finally {
-            try {
-                clientSocket.close();
-            } catch (Exception e) {
-                System.err.println("Error closing client socket: " + e.getMessage());
+
+    private static void handleClientChat(Socket socket) {
+        try (
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter writer = new PrintWriter(socket.getOutputStream(), true)
+        ) {
+            String message;
+            while ((message = reader.readLine()) != null) {
+                System.out.println("Received: " + message);
+                writer.println("Echo from server: " + message);
             }
+        } catch (IOException e) {
+            System.out.println("User disconnected or connection lost.");
         }
     }
 }
