@@ -234,7 +234,6 @@ public class Server {
                         String messageContent = msgParts.length > 1 ? msgParts[1] : "";
                         groupMsgObj = new Message(messageContent, currentUser.getUsername(), "Group:" + groupName);
                     }
-                    System.out.println("Server processing group message: " + groupMsgObj.toString());
 
                     String rawGroupName = groupMsgObj.getRecipientId().replace("Group:", "");
                     GroupChat gc = groupChats.get(rawGroupName.toLowerCase());
